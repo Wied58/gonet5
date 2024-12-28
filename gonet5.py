@@ -6,8 +6,8 @@ from pprintpp import pprint as pp
 
 #import picamera2
 
-#from PIL import Image
-from PIL import Image, ExifTags
+from PIL import Image
+#from PIL import Image, ExifTags
 import numpy as np
 
 
@@ -85,18 +85,41 @@ print(f"SensorTemperature = {SensTemp}")
 
 picam2.close()
 
+# https://www.media.mit.edu/pia/Research/deepview/exif.html
 
+import piexif
 
-latitude = 34.0522  # Example latitude coordinates
-longitude = -118.2437  # Example longitude coordinates
-image_path = 'image.jpg'  # Path to your image
+zeroth_ifd = {
+              piexif.ImageIFD.Make: u"Canon",
+              piexif.ImageIFD.XResolution: (96, 1),
+              piexif.ImageIFD.YResolution: (96, 1),
+              piexif.ImageIFD.Software: u"piexif"
+              }
+exif_ifd = {
+            piexif.ExifIFD.DateTimeOriginal: u"2099:09:29 10:10:10",
+            piexif.ExifIFD.ExposureTime: u"LensMake",
+            piexif.ExifIFD.Sharpness: 65535,
+            piexif.ExifIFD.LensSpecification: ((1, 1), (1, 1), (1, 1), (1, 1)),
+            }
+gps_ifd = {
+           piexif.GPSIFD.GPSVersionID: (2, 0, 0, 0),
+           piexif.GPSIFD.GPSAltitudeRef: 1,
+           piexif.GPSIFD.GPSDateStamp: u"1999:99:99 99:99:99",
+           }
+first_ifd = {
+             piexif.ImageIFD.Make: u"Canon",
+             piexif.ImageIFD.XResolution: (40, 1),
+             piexif.ImageIFD.YResolution: (40, 1),
+             piexif.ImageIFD.Software: u"piexif"
+             }
 
-add_geolocation(image_path, latitude, longitude)
+#exif_dict = {"0th":zeroth_ifd, "Exif":exif_ifd, "GPS":gps_ifd, "1st":first_ifd, "thumbnail":thumbnail}
+exif_dict = {"0th":zeroth_ifd, "Exif":exif_ifd, "GPS":gps_ifd, "1st":first_ifd}
+exif_bytes = piexif.dump(exif_dict)
+im = Image.open("image.jpg")
+im.save("out.jpg", exif=exif_bytes)
 
-image_path = 'image.tiff'  # Path to your image
-
-add_geolocation(image_path, latitude, longitude)
-
-
+im = Image.open("image.tiff")
+im.save("out.tiff", exif=exif_bytes)
 
 
