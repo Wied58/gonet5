@@ -11,6 +11,11 @@ import picamera2
 from PIL import Image
 from PIL import Image, ExifTags
 import numpy as np
+
+
+from astropy.io import fits
+
+
 import piexif
 
 # exposure time in micro seconds
@@ -25,10 +30,11 @@ config = picam2.create_still_configuration(raw={"size": (4032, 3024)})
 picam2.configure(config)
 
 picam2.set_controls({ 
-                     "ExposureTime": exposure,  
-                     "AnalogueGain": 8.0, 
                      "AeEnable": False, 
-                     "AwbEnable": False
+                     "AwbEnable": False,
+                     "AnalogueGain": 8.0, 
+                     "ColourGains": (3.35, 1.59),
+                     "ExposureTime": exposure,  
                      })
 
 
@@ -56,6 +62,9 @@ img = Image.fromarray(array)
 img.save("image.tiff")
 
 img.save("image.jpg")
+
+hdu = fits.PrimaryHDU(data=np.array(img))
+hdu.writeto("image.fits")
 
 SensTemp = metadata["SensorTemperature"]
 print(f"SensorTemperature = {SensTemp}")
